@@ -1,0 +1,67 @@
+# Example adapted from offical documentation (section allOf) https://swagger.io/docs/specification/data-models/oneof-anyof-allof-not/
+openapi: "3.0.0"
+info:
+  version: 1.0.0
+  title: Swagger Petstore
+  license:
+    name: MIT
+servers:
+  - url: http://petstore.swagger.io/v1
+paths:
+  /pets:
+    get:
+      summary: List all pets
+      operationId: listPets
+      tags:
+        - pets
+      responses:
+        '200':
+          description: Array of pets
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Pets"
+components:
+  schemas:
+    Pets:
+      type: array
+      items:
+        $ref: "#/components/schemas/Pet"
+    Pet:
+      oneOf:
+        - $ref: '#/components/schemas/Cat'
+        - $ref: '#/components/schemas/Dog'
+      discriminator:
+        propertyName: type
+        mapping:
+          DOG: '#/components/schemas/Dog'
+          CAT: '#/components/schemas/Cat'
+    Dog:
+      allOf:
+        - $ref: '#/components/schemas/PetBase'
+        - properties:
+            fluffy:
+              type: boolean
+            breed:
+              $ref: '#/components/schemas/DogEnum'
+    Cat:
+      allOf:
+        - $ref: '#/components/schemas/PetBase'
+        - properties:
+            rulerOf:
+              type: string
+              enum: [ WORLD, UNIVERSE ]
+    PetBase:
+      type: object
+      discriminator:
+        propertyName: type
+      required:
+        - type
+      properties:
+        type:
+          type: string
+        name:
+          type: string
+    DogEnum:
+      type: string
+      enum: [ DOG_A, DOG_B ]
